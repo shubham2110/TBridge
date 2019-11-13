@@ -30,10 +30,10 @@ def invoke_service(data):
         if r:
             ret += sock.recv(4096)
             if len(ret) == 0:
-                print 'service sock closed'
+                print('service sock closed')
                 break
         else:
-            print 'service data length', len(ret)
+            print('service data length', len(ret))
             break
     return ret
 
@@ -98,8 +98,8 @@ def splitn(s, n):
 
 def argparse():
     if len(sys.argv) != 4:
-        print 'usage: python server.py port-for-client service-host service-port'
-        print 'e.g. for ssh: python server.py 8089 localhost 22'
+        print ('usage: python server.py port-for-client service-host service-port')
+        print ('e.g. for ssh: python server.py 8089 localhost 22')
         sys.exit()
     return int(sys.argv[1]), sys.argv[2], int(sys.argv[3])
 
