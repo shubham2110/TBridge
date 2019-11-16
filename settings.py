@@ -31,6 +31,7 @@ unpad = lambda s: s[0:-ord(s[-1])]
 
 
 def encrypt(raw):
+    #print(raw)
     raw = pad(raw)
     iv = Random.new().read(AES.block_size)
     cipher = AES.new(encrypt_key, AES.MODE_CBC, iv)
@@ -41,6 +42,7 @@ def decrypt(enc):
     enc = base64.b64decode(enc)
     iv = enc[:16]
     cipher = AES.new(encrypt_key, AES.MODE_CBC, iv)
+    #print(iv)
     return unpad(cipher.decrypt(enc[16:]))
 
 
