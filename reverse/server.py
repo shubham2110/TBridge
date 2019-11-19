@@ -15,6 +15,7 @@ from copy import copy
 
 from settings import route_to_transport, route_to_init, route_to_shutdown, md5digest
 from settings import encrypt, decrypt, cookie_param_name, js_template_file, headers
+from settings import data_fragment_size
 
 connections={}
 connectiond={}
@@ -121,9 +122,12 @@ def read_send_and_recv(address):
         elif connections[address][1] == 0:
             continue
         elif connections[address][1] == 1 :
-            print(connectiond[address].get())
+            #print connections[address]
+            x=connectiond[address].get()
+            #send_x_to_client
             if connectiond[address].empty():
                 connections[address][1]=0
+            #print connections[address]
 # To be called on thread
 def client_send_and_recv(client, address):
     connections[address]=[client,0]
@@ -131,13 +135,20 @@ def client_send_and_recv(client, address):
     while True:
         try:
             buf = client.recv(data_fragment_size)
-        except:
+        except Exception, err:
             #shutdown_client(client, address)
+            print(Exception, err)
+            print("Client did not receive")
             break
         if len(buf) == 0 :
             #shutdown_client(client, address)
+            print("Buffer len Zero.")
             break
+        #print(buf)
         connectiond[address].put(buf)
+        connections[address][1]=1
+    print("Removing Connection: ", address)
+    del connections[address]
 
 def handle_clients(service_host, service_port):
     sock = socket.socket()
@@ -146,15 +157,19 @@ def handle_clients(service_host, service_port):
     
     while True:
         client, address = sock.accept()
+        address=str(address)
         # Tobe called on thread
         x = threading.Thread(target=client_send_and_recv, args=(client,address))
         x.start()
+        print("One Client connect: ", address, "  .")
 	
         #client_send_and_recv(client, address)
 
 def read_all_clients():
     while True:
+        print "Checking Active Connections: ", len(connections.keys()), "  found."
         for each in connections.keys():
+            address=each
             threading.Thread(target=read_send_and_recv, args=(address,)).start()
         import time
         time.sleep(5)
@@ -162,8 +177,8 @@ def read_all_clients():
 if __name__ == '__main__':
     webserv_port, service_host, service_port = argparse()
     # webserv_port, service_host, service_port = 8089, 'localhost', 22
-    handle_clients(service_host, service_port)
     threading.Thread(target=read_all_clients).start()
+    handle_clients(service_host, service_port)
     #sock = None
     #js_template = get_template(js_template_file)
     #placeholder = re.findall('(".*?")', js_template)
